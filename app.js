@@ -7,6 +7,7 @@ const port = 3000;
 
 app.set("view engine", "ejs");
 app.use(express.static("public"));
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect("mongodb://localhost:27017/product", {
   useNewUrlParser: true,
@@ -18,7 +19,7 @@ const productSchema = mongoose.Schema({
   price: Number,
 });
 const Item = mongoose.model("Item", productSchema);
-
+//Get a Document
 app.get("/", function (req, res) {
   Item.find(function (err, item) {
     if (!err) {
@@ -28,14 +29,13 @@ app.get("/", function (req, res) {
     }
   });
 });
-
+//post a Document
 app.post("/", function (req, res) {
   const newItem = new Item({
     product: req.body.product,
     price: req.body.price,
   });
-  console.log(req.body.product);
-  console.log(req.body.price);
+  
   newItem.save(function (err) {
     if (err) {
       res.send(err);
@@ -46,10 +46,10 @@ app.post("/", function (req, res) {
   });
 });
 
-app.put("/edit/:product", function (req, res) {
+app.put("/:product", function (req, res) {
   Item.updateOne(
     { product :req.params.product },
-    { product: req.body.product, price: req.body.price },
+   {$set: { product: req.body.product, price: req.body.price }},
     { overwrite: true },
     function (err) {
       if (!err) {
@@ -61,6 +61,7 @@ app.put("/edit/:product", function (req, res) {
     }
   );
 });
+//Delete Single Document
 app.delete("/delete/:product", function (req, res) {
   Item.findOneAndDelete(
     { product: req.params.product },
